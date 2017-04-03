@@ -225,32 +225,32 @@ RSpec.describe JWTSignedRequest do
       context 'and the request method is different' do
         let(:method) { 'GET' }
 
-        it 'raises a RequestVerificationFailedError' do
-          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestVerificationFailedError)
+        it 'raises a RequestMethodVerificationFailed' do
+          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestMethodVerificationFailed)
         end
       end
 
       context 'and the request path is different' do
         let(:path) { '/api/different/endpoint'}
 
-        it 'raises a RequestVerificationFailedError' do
-          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestVerificationFailedError)
+        it 'raises a RequestPathVerificationFailed' do
+          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestPathVerificationFailed)
         end
       end
 
       context 'and the body is different' do
         let(:body_sha) { '1ddfd12592f1090bb0f18a744abe97d07c7adacad3d3a27a9bfa927ff07f7b3c' }
 
-        it 'raises a RequestVerificationFailedError' do
-          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestVerificationFailedError)
+        it 'raises a RequestBodyVerificationFailed' do
+          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestBodyVerificationFailed)
         end
       end
 
       context 'and the request headers is different' do
         let(:headers) { { 'content-type' => 'application/xml' } }
 
-        it 'raises a RequestVerificationFailedError' do
-          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestVerificationFailedError)
+        it 'raises a RequestHeaderVerificationFailed' do
+          expect{ verify_request }.to raise_error(JWTSignedRequest::RequestHeaderVerificationFailed)
         end
       end
 

@@ -10,6 +10,10 @@ module JWTSignedRequest
   MissingAuthorizationHeaderError = Class.new(UnauthorizedRequestError)
   JWTDecodeError = Class.new(UnauthorizedRequestError)
   RequestVerificationFailedError = Class.new(UnauthorizedRequestError)
+  RequestMethodVerificationFailed = Class.new(RequestVerificationFailedError)
+  RequestPathVerificationFailed = Class.new(RequestVerificationFailedError)
+  RequestBodyVerificationFailed= Class.new(RequestVerificationFailedError)
+  RequestHeaderVerificationFailed = Class.new(RequestVerificationFailedError)
 
   def self.sign(method:, path:,
                 body: EMPTY_BODY, headers:,
@@ -50,13 +54,28 @@ module JWTSignedRequest
 
     begin
       claims = JWT.decode(jwt_token, secret_key, verify, options)[0]
-      unless verified_request?(request: request, claims: claims)
-        raise RequestVerificationFailedError, "Request failed verification"
-      end
+      verify_request!(request: request, claims: claims)
 
     rescue ::JWT::DecodeError => e
       raise JWTDecodeError, e.message
     end
+  end
+
+  def self.verify_request!(request:, claims:)
+    unless claims['method'].downcase == request.request_method.downcase
+      raise RequestMethodVerificationFailed, "#{claims['method'].downcase} != #{request.request_method.downcase}"
+    end
+    unless claims['path'] == request.fullpath
+      raise RequestPathVerificationFailed, "#{claims['path']} != #{request.fullpath}"
+    end
+    unless claims['body_sha'] == Digest::SHA256.hexdigest(request_body(request: request))
+      raise RequestBodyVerificationFailed,
+        "#{claims['body_sha']} != #{Digest::SHA256.hexdigest(request_body(request: request))}"
+    end
+    unless verified_headers?(request: request, claims: claims)
+      raise RequestHeaderVerificationFailed, "Headers failed verification"
+    end
+    true
   end
 
   def self.verified_request?(request:, claims:)
